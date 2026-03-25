@@ -45,23 +45,32 @@ export default function Subjects() {
       setAlert({ type: 'error', msg: 'Subject name and form level are required.' })
       return
     }
-    setSaving(true)
-    const { error } = await supabase.from('subjects').insert({
-      school_id:  school.id,
-      name:       form.name,
-      form_level: form.form_level,
-      teacher_id: form.teacher_id || null,
-      term:       school.active_term,
-      year:       school.active_year,
-    })
-    if (error) {
-      setAlert({ type: 'error', msg: error.message })
-    } else {
-      setModal(false)
-      setForm({ name: '', form_level: '', teacher_id: '' })
-      load()
+    if (!school || !school.id) {
+      setAlert({ type: 'error', msg: 'No school configuration found. Cannot create subject.' })
+      return
     }
-    setSaving(false)
+    setSaving(true)
+    try {
+      const { error } = await supabase.from('subjects').insert({
+        school_id:  school.id,
+        name:       form.name,
+        form_level: form.form_level,
+        teacher_id: form.teacher_id || null,
+        term:       school.active_term,
+        year:       school.active_year,
+      })
+      if (error) {
+        setAlert({ type: 'error', msg: error.message })
+      } else {
+        setModal(false)
+        setForm({ name: '', form_level: '', teacher_id: '' })
+        load()
+      }
+    } catch (err) {
+      setAlert({ type: 'error', msg: err.message || 'An error occurred.' })
+    } finally {
+      setSaving(false)
+    }
   }
 
   async function openEnroll(subject) {

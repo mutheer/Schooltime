@@ -35,37 +35,45 @@ export default function Teachers() {
       setAlert({ type: 'error', msg: 'Name, staff ID, email and password are required.' })
       return
     }
+    if (!school || !school.id) {
+      setAlert({ type: 'error', msg: 'No school configuration found for your account. Please consult system administrator.' })
+      return
+    }
     setSaving(true)
     setAlert(null)
 
-    // Create Supabase auth user
-    const { data: authData, error: authErr } = await supabase.auth.admin
-      ? { data: null, error: { message: 'Use service role for admin actions' } }
-      // Fall back to signUp (works client-side; teacher gets email confirmation)
-      : await supabase.auth.signUp({ email: form.email, password: form.password, options: { emailRedirectTo: window.location.origin } })
+    try {
+      // Create Supabase auth user
+      const { error: authErr } = await supabase.auth.signUp({
+        email: form.email,
+        password: form.password,
+        options: { emailRedirectTo: window.location.origin }
+      })
 
-    // Since we can't use admin API from client, we use an RPC approach
-    const { data: userId, error: rpcErr } = await supabase.rpc('create_user_account', {
-      p_email:    form.email,
-      p_password: form.password,
-      p_role:     'teacher',
-      p_school_id: school.id,
-      p_full_name: form.full_name,
-      p_id_number: form.id_number,
-      p_phone:    form.phone || null,
-    })
+      // Since we can't use admin API from client safely, we use an RPC approach
+      const { data: userId, error: rpcErr } = await supabase.rpc('create_user_account', {
+        p_email:    form.email,
+        p_password: form.password,
+        p_role:     'teacher',
+        p_school_id: school.id,
+        p_full_name: form.full_name,
+        p_id_number: form.id_number,
+        p_phone:    form.phone || null,
+      })
 
-    if (rpcErr) {
-      setAlert({ type: 'error', msg: rpcErr.message })
+      if (rpcErr) {
+        setAlert({ type: 'error', msg: rpcErr.message })
+      } else {
+        setAlert({ type: 'success', msg: `Teacher "${form.full_name}" created successfully.` })
+        setForm(BLANK)
+        setModal(false)
+        load()
+      }
+    } catch (err) {
+      setAlert({ type: 'error', msg: err.message || 'An unexpected error occurred.' })
+    } finally {
       setSaving(false)
-      return
     }
-
-    setAlert({ type: 'success', msg: `Teacher "${form.full_name}" created successfully.` })
-    setForm(BLANK)
-    setModal(false)
-    load()
-    setSaving(false)
   }
 
   async function toggleActive(teacher) {

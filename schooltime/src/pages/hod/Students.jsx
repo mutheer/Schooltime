@@ -42,30 +42,39 @@ export default function Students() {
       setAlert({ type: 'error', msg: 'Name, student ID, form level, email and password are all required.' })
       return
     }
+    if (!school || !school.id) {
+      setAlert({ type: 'error', msg: 'No school configuration found for your account. Please consult system administrator.' })
+      return
+    }
     setSaving(true)
     setAlert(null)
 
-    const { data: userId, error } = await supabase.rpc('create_user_account', {
-      p_email:        form.email,
-      p_password:     form.password,
-      p_role:         'student',
-      p_school_id:    school.id,
-      p_full_name:    form.full_name,
-      p_id_number:    form.id_number,
-      p_phone:        form.phone || null,
-      p_parent_phone: form.parent_phone || null,
-      p_form_level:   form.form_level,
-    })
+    try {
+      const { data: userId, error } = await supabase.rpc('create_user_account', {
+        p_email:        form.email,
+        p_password:     form.password,
+        p_role:         'student',
+        p_school_id:    school.id,
+        p_full_name:    form.full_name,
+        p_id_number:    form.id_number,
+        p_phone:        form.phone || null,
+        p_parent_phone: form.parent_phone || null,
+        p_form_level:   form.form_level,
+      })
 
-    if (error) {
-      setAlert({ type: 'error', msg: error.message })
-    } else {
-      setAlert({ type: 'success', msg: `Student "${form.full_name}" added.` })
-      setForm(BLANK)
-      setModal(false)
-      load()
+      if (error) {
+        setAlert({ type: 'error', msg: error.message })
+      } else {
+        setAlert({ type: 'success', msg: `Student "${form.full_name}" added.` })
+        setForm(BLANK)
+        setModal(false)
+        load()
+      }
+    } catch (err) {
+      setAlert({ type: 'error', msg: err.message || 'An unexpected error occurred.' })
+    } finally {
+      setSaving(false)
     }
-    setSaving(false)
   }
 
   async function toggleActive(student) {
