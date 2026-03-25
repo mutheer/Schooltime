@@ -23,7 +23,7 @@ export default function Subjects() {
     setLoading(true)
     const [subRes, tchRes, stuRes] = await Promise.all([
       supabase.from('subjects')
-        .select('*, profiles(full_name)')
+        .select('*, profiles!teacher_id(full_name)')
         .eq('term', school.active_term)
         .eq('year', school.active_year)
         .order('form_level').order('name'),
