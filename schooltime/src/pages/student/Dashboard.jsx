@@ -64,7 +64,7 @@ export default function StudentDashboard() {
 
       {loading ? <Spinner className="py-20" /> : (
         <>
-          <div className="grid grid-cols-3 gap-4 mb-10">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-10">
             <StatCard label="My subjects"   value={stats.subjects}                                    icon="📚" color="blue"   />
             <StatCard label="Tasks done"    value={stats.submitted}                                   icon="✅" color="green"  />
             <StatCard label="Avg score"     value={stats.avgScore !== null ? `${stats.avgScore}` : '—'} icon="📊" color="purple" />

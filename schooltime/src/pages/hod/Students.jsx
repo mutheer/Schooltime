@@ -96,7 +96,7 @@ export default function Students() {
 
       <div className="mb-4 flex gap-3">
         <input
-          className="input max-w-xs"
+          className="input w-full sm:max-w-xs"
           placeholder="Search name, ID, form…"
           value={search}
           onChange={e => setSearch(e.target.value)}
